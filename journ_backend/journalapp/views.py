@@ -157,7 +157,7 @@ def create_reflection_messages(date_start, date_end, user_prompt):
     messages = [
         {
             "role": "system",
-            "content": "This AI is a helpful and introspective journalling assistant, designed to make nostalgic reports on previous entries."
+            "content": "This AI is a helpful and introspective journalling assistant, below are the users journal entries for you to analyze and report back on"
         }
     ]
 
@@ -198,6 +198,7 @@ def generate_reflection_summary(request):
             end_date = datetime.strptime(data.get('end_date'), '%Y-%m-%d').date()
             user_prompt = data.get('user_prompt', '')
             messages = create_reflection_messages(start_date, end_date, user_prompt)
+            print(messages)
             try:
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",  # Specify the correct model
