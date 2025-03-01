@@ -5,6 +5,7 @@ from openai import OpenAI
 from django.http import JsonResponse
 from .models import JournalEntry, PromptResponsePair
 import os
+import datetime
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 class JournalEntryViewSet(viewsets.ModelViewSet):
