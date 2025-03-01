@@ -12,6 +12,5 @@ urlpatterns = [
     path('test-ai/', test_openai_api, name='test-openai_api'),
     path('reflect/', generate_reflection_summary, name='reflection-summary'),
     path('start/', generate_start_prompt, name='start-prompt'),
-    path('further/', generate_further_prompt, name='further-prompt'),
-    path('test-env/', test_env, name='test-env')
+    path('further/', generate_further_prompt, name='further-prompt')
 ]
