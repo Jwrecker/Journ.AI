@@ -114,7 +114,7 @@ def create_further_messages():
     # Add a final message from the user asking for a prompt about their day
     messages.append({
         "role": "user",
-        "content": "Please give me a prompt that asks about my day and helps me write a journal entry. Use my previous entries as context to help me write and retain what happened today."
+        "content": "Please give me a prompt that asks about my day and helps me write a journal entry. Ask me a question that will prompt me to write more about my day."
     })
 
     return messages
