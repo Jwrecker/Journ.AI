@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'journalapp',  # Add your app here
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
