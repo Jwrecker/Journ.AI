@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
+import api from "@/utils/api";
+
+const myApi = api();
 
 type Message = {
   id: string
@@ -54,6 +57,12 @@ const MemoryPage = () => {
       setMessages((prev) => [...prev, assistantMessage])
       setIsLoading(false)
     }, 1000)
+  }
+
+  const handleTestApi = async () => {
+    console.log("Testing API");
+    const response = await myApi.testapi();
+    console.log(response);
   }
 
   return (
@@ -111,6 +120,7 @@ const MemoryPage = () => {
             <Send className="h-4 w-4" />
             <span className="sr-only">Send</span>
           </Button>
+          <Button onClick={handleTestApi}> Test Api </Button>
         </div>
       </div>
     </div>
