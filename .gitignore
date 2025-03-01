@@ -1,0 +1,55 @@
+# General
+*.log
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+.DS_Store
+.env
+
+# Virtual Environment
+venv/
+.env/
+.venv/
+
+# Django
+/db.sqlite3
+/db.sqlite3-journal
+/static/
+/media/
+
+# Migrations (optional, if you want to track migrations, remove this)
+**/migrations/__pycache__/
+**/migrations/*.pyc
+
+# React / Node
+node_modules/
+/build/
+/.eslintcache
+
+# IDE / Editor specific
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.sublime-project
+*.sublime-workspace
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Mac system files
+*.DS_Store
+
+# Docker
+*.pid
+*.sock
+**/__pycache__/
