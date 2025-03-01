@@ -5,6 +5,7 @@ from openai import OpenAI
 from django.http import JsonResponse
 from .models import JournalEntry, PromptResponsePair
 import os
+import datetime
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 class JournalEntryViewSet(viewsets.ModelViewSet):
@@ -41,82 +42,143 @@ def test_openai_api(request):
         return JsonResponse({'response': response.choices[0].message.content.strip()}, status=200)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-    
 
-def generate_today_prompt(request):
-    # Collect the last five journal entries for context
+def create_start_messages():
+    # Start with a message from the developer setting the context
+    messages = [
+        {
+            "role": "system",
+            "content": "This AI is a helpful and introspective journalling assistant, designed to prompt users to journal and help people recollect on their entries."
+        }
+    ]
+
+    # Get the last five journal entries
     latest_entries = JournalEntry.objects.order_by('-date')[:5]
-    previous_context = []
 
     for entry in latest_entries:
-        # Retrieve all prompt-response pairs for each entry
+        # Retrieve all prompt-response pairs for this entry
         pairs = PromptResponsePair.objects.filter(entry=entry)
+
+        # Append formatted messages
         for pair in pairs:
-            # Format and append both prompt and response to the context
-            previous_context.append(f"Q: {pair.prompt}")
-            previous_context.append(f"A: {pair.response}")
+            messages.append({
+                "role": "assistant",
+                "content": f"{pair.prompt}"
+            })
+            messages.append({
+                "role": "user",
+                "content": f"{pair.response}"
+            })
 
-    # Join all elements to form a complete previous context
-    previous_context_text = " ".join(previous_context)
+    # Add a final message from the user asking for a prompt about their day
+    messages.append({
+        "role": "user",
+        "content": "Please give me a prompt that asks about my day and helps me write a journal entry. Use my previous entries as context to help me write and retain what happened today."
+    })
 
-    # Construct the prompt for generating the starter question of the day
-    prompt_question = (f"Based on my previous journal entries: {previous_context_text} "
-                       "Please ask a starter question about my day that will help me write and reflect in a journal entry.")
+    return messages
 
+
+def create_further_messages():
+    # Start with a message from the developer setting the context
+    messages = [
+        {
+            "role": "system",
+            "content": "This AI is a helpful and introspective journalling assistant, designed to prompt users to journal and help people recollect on their entries. The most recent entries have been entered today and your questions should follow up on them and prompt further response from the user"
+        }
+    ]
+
+    # Get the last five journal entries
+    latest_entries = JournalEntry.objects.order_by('-date')[:5]
+
+    for entry in latest_entries:
+        # Retrieve all prompt-response pairs for this entry
+        pairs = PromptResponsePair.objects.filter(entry=entry)
+
+        # Append formatted messages
+        for pair in pairs:
+            messages.append({
+                "role": "assistant",
+                "content": f"{pair.prompt}"
+            })
+            messages.append({
+                "role": "user",
+                "content": f"{pair.response}"
+            })
+
+    # Add a final message from the user asking for a prompt about their day
+    messages.append({
+        "role": "user",
+        "content": "Please give me a prompt that asks about my day and helps me write a journal entry. Use my previous entries as context to help me write and retain what happened today. The most recent response pair is from today, and I would like you to keep it in mind to help me write more specific and meaningful entries for today's entry"
+    })
+
+    return messages
+
+# Example usage in a view to generate OpenAI API compatible messages
+def generate_start_prompt(request):
     try:
-        response = client.completions.create(engine="davinci",
-        prompt=prompt_question,
-        max_tokens=100,
-        stop=["\n"],  # Stops at the first newline to get a concise question
-        temperature=0.7)  # Slightly creative to generate engaging and thoughtful prompts)
-        starter_prompt = response.choices[0].text.strip()
-        return JsonResponse({'prompt': starter_prompt}, status=200)
+        messages = create_start_messages()
+        response = client.chat.completions.create(
+            model="gpt-4o",  # Specify the correct model
+            messages=messages,
+            max_tokens=150,  # Adjust as necessary
+            temperature=0.5  # Adjust for creativity variability
+        )
+        # Extracting and returning the response
+        return JsonResponse({'response': response['choices'][0]['message']['content'].strip()}, status=200)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-
 
 def generate_further_prompt(request):
-    # Get today's date and collect the journal entry for today if it exists
-    today = date.today()
-    today_entry = JournalEntry.objects.filter(date=today).first()
-
-    # Context for today's responses
-    today_context = []
-    if today_entry:
-        today_pairs = PromptResponsePair.objects.filter(entry=today_entry)
-        for pair in today_pairs:
-            today_context.append(f"Q: {pair.prompt}")
-            today_context.append(f"A: {pair.response}")
-
-    # Collect the last five journal entries including today, with their prompts and responses
-    latest_entries = JournalEntry.objects.order_by('-date')[:6]  # fetch one extra to ensure we have enough if today is included
-    previous_context = []
-
-    for entry in latest_entries:
-        if entry != today_entry:  # Avoid duplicating today's entry
-            pairs = PromptResponsePair.objects.filter(entry=entry)
-            for pair in pairs:
-                previous_context.append(f"Q: {pair.prompt}")
-                previous_context.append(f"A: {pair.response}")
-
-    # Construct the full prompt with clearly separated contexts
-    previous_context_text = " ".join(previous_context)
-    today_context_text = " ".join(today_context)
-    prompt_question = (f"Reflecting on my previous entries: {previous_context_text} "
-                       f"And today's responses: {today_context_text} "
-                       "Generate an open-ended follow-up question to help me continue writing and reflecting on my day.")
-
     try:
-        response = client.completions.create(engine="davinci",
-        prompt=prompt_question,
-        max_tokens=150,
-        stop=["\n\n"],  # Stops at first double newline, may adjust based on desired output
-        temperature=0.6)  # Moderately creative to generate thoughtful, engaging prompts)
-        prompt_text = response.choices[0].text.strip()
-        return JsonResponse({'prompt': prompt_text}, status=200)
+        messages = create_further_messages()
+        response = client.chat.completions.create(
+            model="gpt-4o",  # Specify the correct model
+            messages=messages,
+            max_tokens=150,  # Adjust as necessary
+            temperature=0.5  # Adjust for creativity variability
+        )
+        # Extracting and returning the response
+        return JsonResponse({'response': response['choices'][0]['message']['content'].strip()}, status=200)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+
+def create_reflection_messages(date_start, date_end, user_prompt):
+    # Start with a message from the developer setting the context
+    messages = [
+        {
+            "role": "system",
+            "content": "This AI is a helpful and introspective journalling assistant, designed to prompt users to journal and help people recollect on their entries. The user will list entries for context from a date range and will prompt you to summarize and create a nostalgic report and analysis of their journal entries"
+        }
+    ]
+
+    # Get the last five journal entries
+    latest_entries = JournalEntry.objects.filter(date__range=[date_start, date_end])
+
+    for entry in latest_entries:
+        # Retrieve all prompt-response pairs for this entry
+        pairs = PromptResponsePair.objects.filter(entry=entry)
+
+        # Append formatted messages
+        for pair in pairs:
+            messages.append({
+                "role": "assistant",
+                "content": f"{pair.prompt}"
+            })
+            messages.append({
+                "role": "user",
+                "content": f"{pair.response}"
+            })
+
+    # Add a final message from the user asking for a prompt about their day
+    messages.append({
+        "role": "user",
+        "content": user_prompt
+    })
+
+    return messages
 
 def generate_reflection_summary(request):
     # Extract dates and user prompt from the request
@@ -125,33 +187,15 @@ def generate_reflection_summary(request):
     end_date = datetime.strptime(data.get('end_date'), '%Y-%m-%d').date()
     user_prompt = data.get('user_prompt', '')
 
-    # Fetch entries within the specified date range
-    entries = JournalEntry.objects.filter(date__range=[start_date, end_date])
-    context_responses = []
-
-    for entry in entries:
-        pairs = PromptResponsePair.objects.filter(entry=entry)
-        for pair in pairs:
-            # Format responses as quotes for the context
-            context_responses.append(f"\"{pair.response}\"")
-
-    # Join all quotes to form the historical context
-    context_text = " ".join(context_responses)
-
-    # Construct the final prompt for the reflection
-    full_prompt = (f"{user_prompt} Reflecting on the period from {start_date} to {end_date}: "
-                   f"{context_text} Please provide a nostalgic summary and a reflective look over this timeframe.")
-
+    messages = create_reflection_messages(start_date, end_date, user_prompt)
     try:
-        response = client.completions.create(engine="davinci",
-        prompt=full_prompt,
-        max_tokens=500,  # Longer tokens for more detailed reflection
-        stop=None,  # No specific stop character, allow to complete the thought
-        temperature=0.6,  # Lower temperature for coherent and focused output
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0)
-        reflective_summary = response.choices[0].text.strip()
-        return JsonResponse({'summary': reflective_summary}, status=200)
+        response = client.chat.completions.create(
+            model="gpt-4o",  # Specify the correct model
+            messages=messages,
+            max_tokens=750,  # Adjust as necessary
+            temperature=0.5  # Adjust for creativity variability
+        )
+        # Extracting and returning the response
+        return JsonResponse({'response': response['choices'][0]['message']['content'].strip()}, status=200)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
