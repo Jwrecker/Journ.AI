@@ -126,7 +126,7 @@ def generate_start_prompt(request):
         response = client.chat.completions.create(
             model="gpt-4o-mini",  # Specify the correct model
             messages=messages,
-            max_tokens=150,  # Adjust as necessary
+            max_tokens=250,  # Adjust as necessary
             stop=["?", "\n"],
             temperature=0.5  # Adjust for creativity variability
         )
