@@ -6,6 +6,10 @@ from django.http import JsonResponse
 from .models import JournalEntry, PromptResponsePair
 import os
 import datetime
+import json
+from datetime import datetime
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 class JournalEntryViewSet(viewsets.ModelViewSet):
@@ -152,7 +156,7 @@ def create_reflection_messages(date_start, date_end, user_prompt):
     messages = [
         {
             "role": "system",
-            "content": "This AI is a helpful and introspective journalling assistant, designed to prompt users to journal and help people recollect on their entries. The user will list entries for context from a date range and will prompt you to summarize and create a nostalgic report and analysis of their journal entries"
+            "content": "This AI is a helpful and introspective journalling assistant, designed to make nostalgic reports on previous entries."
         }
     ]
 
@@ -182,23 +186,37 @@ def create_reflection_messages(date_start, date_end, user_prompt):
 
     return messages
 
+@csrf_exempt
 def generate_reflection_summary(request):
     # Extract dates and user prompt from the request
-    data = request.GET
-    start_date = datetime.strptime(data.get('start_date'), '%Y-%m-%d').date()
-    end_date = datetime.strptime(data.get('end_date'), '%Y-%m-%d').date()
-    user_prompt = data.get('user_prompt', '')
-
-    messages = create_reflection_messages(start_date, end_date, user_prompt)
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",  # Specify the correct model
-            messages=messages,
-            max_tokens=750,  # Adjust as necessary
-            stop=[".", "?", "!"],
-            temperature=0.5  # Adjust for creativity variability
-        )
-        # Extracting and returning the response
-        return JsonResponse({'response': response['choices'][0]['message']['content'].strip()}, status=200)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+    if request.method == 'POST':
+        try:
+            # Parsing the JSON body of the request
+            data = json.loads(request.body)
+            start_date = datetime.strptime(data.get('start_date'), '%Y-%m-%d').date()
+            end_date = datetime.strptime(data.get('end_date'), '%Y-%m-%d').date()
+            user_prompt = data.get('user_prompt', '')
+            messages = create_reflection_messages(start_date, end_date, user_prompt)
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o",  # Specify the correct model
+                    messages=messages,
+                    max_tokens=750,  # Adjust as necessary
+                    temperature=0.5  # Adjust for creativity variability
+                )
+                # Extracting and returning the response
+                print(response)
+                return JsonResponse({'response': response.choices[0].message.content}, status=200)
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=500)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except KeyError:
+            # Handle missing fields or invalid dates
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+        except ValueError as e:
+            # Handle invalid date format
+            return JsonResponse({'error': str(e)}, status=400)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)    
+    
