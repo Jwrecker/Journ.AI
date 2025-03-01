@@ -89,7 +89,7 @@ def create_further_messages():
     messages = [
         {
             "role": "system",
-            "content": "This AI is a helpful and introspective journalling assistant, designed to prompt users to journal and help people recollect on their entries. The most recent entries have been entered today and your questions should follow up on them and prompt further response from the user"
+            "content": "This AI is a helpful and introspective journalling assistant, designed to prompt users to journal and help people recollect on their entries."
         }
     ]
 
@@ -114,7 +114,7 @@ def create_further_messages():
     # Add a final message from the user asking for a prompt about their day
     messages.append({
         "role": "user",
-        "content": "Please give me a prompt that asks about my day and helps me write a journal entry. Use my previous entries as context to help me write and retain what happened today. The most recent response pair is from today, and I would like you to keep it in mind to help me write more specific and meaningful entries for today's entry"
+        "content": "Please give me a prompt that asks about my day and helps me write a journal entry. Use my previous entries as context to help me write and retain what happened today."
     })
 
     return messages
