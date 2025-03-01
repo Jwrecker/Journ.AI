@@ -42,7 +42,7 @@ def test_openai_api(request):
                 "content": "Hello World!"
             }
         ],
-        model="gpt-4o",
+        model="gpt-4o-mini",
         max_tokens=60)
         return JsonResponse({'response': response.choices[0].message.content.strip()}, status=200)
     except Exception as e:
@@ -114,7 +114,7 @@ def create_further_messages():
     # Add a final message from the user asking for a prompt about their day
     messages.append({
         "role": "user",
-        "content": "Please give me a prompt that asks about my day and helps me write a journal entry. Use my previous entries as context to help me write and retain what happened today."
+        "content": "Please give me a prompt that asks about my day and helps me write a journal entry. Ask me a question that will prompt me to write more about my day."
     })
 
     return messages
@@ -124,7 +124,7 @@ def generate_start_prompt(request):
     try:
         messages = create_start_messages()
         response = client.chat.completions.create(
-            model="gpt-4o",  # Specify the correct model
+            model="gpt-4o-mini",  # Specify the correct model
             messages=messages,
             max_tokens=150,  # Adjust as necessary
             stop=["?", "\n"],
@@ -139,7 +139,7 @@ def generate_further_prompt(request):
     try:
         messages = create_further_messages()
         response = client.chat.completions.create(
-            model="gpt-4o",  # Specify the correct model
+            model="gpt-4o-mini",  # Specify the correct model
             messages=messages,
             max_tokens=250,  # Adjust as necessary
             stop=["?", "\n"],
@@ -157,7 +157,7 @@ def create_reflection_messages(date_start, date_end, user_prompt):
     messages = [
         {
             "role": "system",
-            "content": "This AI is a helpful and introspective journalling assistant, designed to make nostalgic reports on previous entries."
+            "content": "This AI is a helpful and introspective journalling assistant, below are the users journal entries for you to analyze and report back on"
         }
     ]
 
@@ -198,9 +198,10 @@ def generate_reflection_summary(request):
             end_date = datetime.strptime(data.get('end_date'), '%Y-%m-%d').date()
             user_prompt = data.get('user_prompt', '')
             messages = create_reflection_messages(start_date, end_date, user_prompt)
+            print(messages)
             try:
                 response = client.chat.completions.create(
-                    model="gpt-4o",  # Specify the correct model
+                    model="gpt-4o-mini",  # Specify the correct model
                     messages=messages,
                     max_tokens=750,  # Adjust as necessary
                     temperature=0.5  # Adjust for creativity variability
