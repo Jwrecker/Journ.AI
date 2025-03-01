@@ -122,6 +122,7 @@ def generate_start_prompt(request):
             model="gpt-4o",  # Specify the correct model
             messages=messages,
             max_tokens=150,  # Adjust as necessary
+            stop=["?", "\n"],
             temperature=0.5  # Adjust for creativity variability
         )
         # Extracting and returning the response
@@ -136,6 +137,7 @@ def generate_further_prompt(request):
             model="gpt-4o",  # Specify the correct model
             messages=messages,
             max_tokens=150,  # Adjust as necessary
+            stop=["?", "\n"],
             temperature=0.5  # Adjust for creativity variability
         )
         # Extracting and returning the response
@@ -193,6 +195,7 @@ def generate_reflection_summary(request):
             model="gpt-4o",  # Specify the correct model
             messages=messages,
             max_tokens=750,  # Adjust as necessary
+            stop=[".", "?", "!"],
             temperature=0.5  # Adjust for creativity variability
         )
         # Extracting and returning the response
