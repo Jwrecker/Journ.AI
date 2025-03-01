@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -17,18 +17,44 @@ type Message = {
   timestamp: Date
 }
 
-const MemoryPage = () => {
+const HomePage = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       content:
-        "Hello! I'm your journal assistant. I can help you reflect on your entries or answer questions about your journaling experience. How can I help you today?",
+        "...",
       role: "assistant",
       timestamp: new Date(),
     },
   ])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    async function getStarterMessage() {
+      try{
+        const response = await myApi.getStartPrompt(); 
+        return response.data.response;
+      } catch (error) {
+        console.error("Error getting starter message: ", error);
+        return "Error getting starter message";
+      }
+    }
+    
+    const generatedStarterMessage = getStarterMessage().then((response) => {
+
+      setMessages([
+        {
+          id: "1",
+          content: response,
+          role: "assistant",
+          timestamp: new Date(),
+        },
+      ])
+    
+    });
+  }, [])
+
 
   const handleSendMessage = async () => {
     if (!input.trim()) return
@@ -61,7 +87,7 @@ const MemoryPage = () => {
 
   const handleTestApi = async () => {
     console.log("Testing API");
-    const response = await myApi.testapi();
+    const response = await myApi.getStartPrompt();
     console.log(response);
   }
 
@@ -127,5 +153,5 @@ const MemoryPage = () => {
   )
 }
 
-export default MemoryPage
+export default HomePage
 

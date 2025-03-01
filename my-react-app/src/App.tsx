@@ -9,7 +9,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<HomePage />} />
+          <Route path="home" element={<HomePage />} />
           <Route path="memory" element={<MemoryPage />} />
           <Route path="calendar" element={<CalendarPage />} />
         </Route>

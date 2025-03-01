@@ -9,7 +9,7 @@ const Sidebar = () => {
       </div>
       <nav className="space-y-2">
         <NavLink
-          to="/"
+          to="/home"
           className={({ isActive }) =>
             `flex items-center p-2 rounded-lg transition-colors ${
               isActive ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
