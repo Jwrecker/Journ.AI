@@ -16,6 +16,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 class JournalEntryViewSet(viewsets.ModelViewSet):
     queryset = JournalEntry.objects.all()
     serializer_class = JournalEntrySerializer
+    
 
 class PromptResponsePairViewSet(viewsets.ModelViewSet):
     queryset = PromptResponsePair.objects.all()
@@ -130,7 +131,7 @@ def generate_start_prompt(request):
             temperature=0.5  # Adjust for creativity variability
         )
         # Extracting and returning the response
-        return JsonResponse({'response': response['choices'][0]['message']['content'].strip()}, status=200)
+        return JsonResponse({'response': response.choices[0].message.content}, status=200)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -145,7 +146,7 @@ def generate_further_prompt(request):
             temperature=0.5  # Adjust for creativity variability
         )
         # Extracting and returning the response
-        return JsonResponse({'response': response['choices'][0]['message']['content'].strip()}, status=200)
+        return JsonResponse({'response': response.choices[0].message.content}, status=200)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
