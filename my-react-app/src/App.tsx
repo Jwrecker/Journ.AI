@@ -1,22 +1,22 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import "./App.css";
-import MemoryPage from "./pages/MemoryPage";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import Layout from "./components/layout"
+import HomePage from "./pages/HomePage"
+import MemoryPage from "./pages/MemoryPage"
+import CalendarPage from "./pages/CalendarPage"
 
 function App() {
-
   return (
     <Router>
-      <nav className="p-4 bg-gray-800 text-white flex gap-4">
-        <Link to="/">Home</Link>
-        <Link to="/about">About</Link>
-      </nav>
-      <div className="p-4">
-        <Routes>
-          <Route path="/" element={<MemoryPage />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="memory" element={<MemoryPage />} />
+          <Route path="calendar" element={<CalendarPage />} />
+        </Route>
+      </Routes>
     </Router>
-  );
+  )
 }
 
-export default App;
+export default App
+
