@@ -8,3 +8,4 @@ class PromptResponsePair(models.Model):
     prompt = models.TextField()
     response = models.TextField()
 
+
