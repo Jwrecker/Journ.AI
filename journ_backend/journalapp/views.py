@@ -10,7 +10,8 @@ import json
 from datetime import datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+OPENAI_API_KEY = os.getenv('OPEN_API_KEY')
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 class JournalEntryViewSet(viewsets.ModelViewSet):
     queryset = JournalEntry.objects.all()
@@ -19,7 +20,6 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
 class PromptResponsePairViewSet(viewsets.ModelViewSet):
     queryset = PromptResponsePair.objects.all()
     serializer_class = PromptResponsePairSerializer
-
 
 def test_openai_api(request):
     # Ensure the API key is set right before making a request
