@@ -143,6 +143,42 @@ def generate_further_prompt(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+
+def create_reflection_messages(date_start, date_end, user_prompt):
+    # Start with a message from the developer setting the context
+    messages = [
+        {
+            "role": "system",
+            "content": "This AI is a helpful and introspective journalling assistant, designed to prompt users to journal and help people recollect on their entries. The user will list entries for context from a date range and will prompt you to summarize and create a nostalgic report and analysis of their journal entries"
+        }
+    ]
+
+    # Get the last five journal entries
+    latest_entries = JournalEntry.objects.filter(date__range=[date_start, date_end])
+
+    for entry in latest_entries:
+        # Retrieve all prompt-response pairs for this entry
+        pairs = PromptResponsePair.objects.filter(entry=entry)
+
+        # Append formatted messages
+        for pair in pairs:
+            messages.append({
+                "role": "assistant",
+                "content": f"{pair.prompt}"
+            })
+            messages.append({
+                "role": "user",
+                "content": f"{pair.response}"
+            })
+
+    # Add a final message from the user asking for a prompt about their day
+    messages.append({
+        "role": "user",
+        "content": user_prompt
+    })
+
+    return messages
+
 def generate_reflection_summary(request):
     # Extract dates and user prompt from the request
     data = request.GET
@@ -150,33 +186,15 @@ def generate_reflection_summary(request):
     end_date = datetime.strptime(data.get('end_date'), '%Y-%m-%d').date()
     user_prompt = data.get('user_prompt', '')
 
-    # Fetch entries within the specified date range
-    entries = JournalEntry.objects.filter(date__range=[start_date, end_date])
-    context_responses = []
-
-    for entry in entries:
-        pairs = PromptResponsePair.objects.filter(entry=entry)
-        for pair in pairs:
-            # Format responses as quotes for the context
-            context_responses.append(f"\"{pair.response}\"")
-
-    # Join all quotes to form the historical context
-    context_text = " ".join(context_responses)
-
-    # Construct the final prompt for the reflection
-    full_prompt = (f"{user_prompt} Reflecting on the period from {start_date} to {end_date}: "
-                   f"{context_text} Please provide a nostalgic summary and a reflective look over this timeframe.")
-
+    messages = create_reflection_messages(start_date, end_date, user_prompt)
     try:
-        response = client.completions.create(engine="davinci",
-        prompt=full_prompt,
-        max_tokens=500,  # Longer tokens for more detailed reflection
-        stop=None,  # No specific stop character, allow to complete the thought
-        temperature=0.6,  # Lower temperature for coherent and focused output
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0)
-        reflective_summary = response.choices[0].text.strip()
-        return JsonResponse({'summary': reflective_summary}, status=200)
+        response = client.chat.completions.create(
+            model="gpt-4o",  # Specify the correct model
+            messages=messages,
+            max_tokens=750,  # Adjust as necessary
+            temperature=0.5  # Adjust for creativity variability
+        )
+        # Extracting and returning the response
+        return JsonResponse({'response': response['choices'][0]['message']['content'].strip()}, status=200)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
