@@ -1,5 +1,8 @@
+import { shadcnPreset } from "./src/lib/utils";
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+    presets: [shadcnPreset],
     darkMode: ["class"],
     content: [
       "./pages/**/*.{ts,tsx}",
