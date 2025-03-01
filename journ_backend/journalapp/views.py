@@ -42,7 +42,7 @@ def test_openai_api(request):
                 "content": "Hello World!"
             }
         ],
-        model="gpt-4o",
+        model="gpt-4o-mini",
         max_tokens=60)
         return JsonResponse({'response': response.choices[0].message.content.strip()}, status=200)
     except Exception as e:
@@ -124,7 +124,7 @@ def generate_start_prompt(request):
     try:
         messages = create_start_messages()
         response = client.chat.completions.create(
-            model="gpt-4o",  # Specify the correct model
+            model="gpt-4o-mini",  # Specify the correct model
             messages=messages,
             max_tokens=150,  # Adjust as necessary
             stop=["?", "\n"],
@@ -139,7 +139,7 @@ def generate_further_prompt(request):
     try:
         messages = create_further_messages()
         response = client.chat.completions.create(
-            model="gpt-4o",  # Specify the correct model
+            model="gpt-4o-mini",  # Specify the correct model
             messages=messages,
             max_tokens=250,  # Adjust as necessary
             stop=["?", "\n"],
@@ -200,7 +200,7 @@ def generate_reflection_summary(request):
             messages = create_reflection_messages(start_date, end_date, user_prompt)
             try:
                 response = client.chat.completions.create(
-                    model="gpt-4o",  # Specify the correct model
+                    model="gpt-4o-mini",  # Specify the correct model
                     messages=messages,
                     max_tokens=750,  # Adjust as necessary
                     temperature=0.5  # Adjust for creativity variability
