@@ -1,9 +1,9 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-// import { Button } from "@/components/ui/button"
-// import { Textarea } from "@/components/ui/textarea"
-// import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Card } from "@/components/ui/card"
 
 export default function ChatInterface() {
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
@@ -78,7 +78,7 @@ export default function ChatInterface() {
                       message.role === "user" ? "bg-blue-100 text-blue-600" : "bg-primary/10 text-primary"
                     }`}
                   >
-                    {message.role === "user" ? <User size={18} /> : <Bot size={18} />}
+                    {/* {message.role === "user" ? <User size={18} /> : <Bot size={18} />} */}
                   </div>
                   <div className="flex-1 prose max-w-none">
                     <div className="whitespace-pre-wrap">{message.content}</div>
@@ -91,7 +91,6 @@ export default function ChatInterface() {
             <Card className="p-4 bg-primary/5 border-primary/10">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-                  <Bot size={18} />
                 </div>
                 <div className="flex-1">
                   <div className="flex space-x-2">
@@ -135,7 +134,7 @@ export default function ChatInterface() {
                 className="absolute bottom-2 right-2"
                 disabled={isLoading || input.trim() === ""}
               >
-                <SendIcon size={18} />
+                {/* <SendIcon size={18} /> */}
               </Button>
             </div>
             <div className="text-xs text-gray-500 text-center">Press Ctrl + Enter to send</div>
