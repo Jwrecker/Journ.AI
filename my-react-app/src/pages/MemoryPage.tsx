@@ -6,9 +6,24 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 
 export default function ChatInterface() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: "/api/chat",
-  })
+  const [messages, setMessages] = useState<{ id: string; role: string; content: string }[]>([])
+  const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value)
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    // Dummy submit logic
+    setTimeout(() => {
+      setMessages([...messages, { id: Date.now().toString(), role: "user", content: input }])
+      setInput("")
+      setIsLoading(false)
+    }, 1000)
+  }
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [isMobile, setIsMobile] = useState(false)
 
